@@ -1,0 +1,21 @@
+*:focus {
+  outline: none;
+}
+
+body {
+  margin: 0;
+}
+
+.container--centered {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
+
+.container--left-right {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
