@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography } from '@material-ui/core';
-import React from 'react';
+import * as React from 'react';
 
-function OptionsHeader() {
+const OptionsHeader: React.FC = () => {
   return (
     <AppBar position="sticky">
       <Toolbar>
@@ -9,6 +9,6 @@ function OptionsHeader() {
       </Toolbar>
     </AppBar>
   );
-}
+};
 
 export { OptionsHeader };

@@ -1,25 +1,28 @@
 import { CircularProgress, Container } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
-import { ErrorBoundary } from '../../components/ErrorBoundary';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { UtsCenter } from '../../components/UtsCenter';
-import { UtsDialog } from '../../components/UtsDialog';
-import { UtsSnackbar } from '../../components/UtsSnackbar';
 import { BrowserStorage } from '../../services/BrowserStorage';
 import { Errors } from '../../services/Errors';
-import { Events } from '../../services/Events';
+import { Events, EventDispatcher } from '../../services/Events';
 import { OptionsActions } from './components/OptionsActions';
-import { OptionsHeader } from './components/OptionsHeader';
 import { OptionsList } from './components/OptionsList';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { OptionsHeader } from './components/OptionsHeader';
+import { UtsDialog } from '../../components/UtsDialog';
+import { UtsSnackbar } from '../../components/UtsSnackbar';
 
-function OptionsApp() {
-  const [content, setContent] = useState({
+interface ContentProps {
+  isLoading: boolean;
+  options: Options;
+}
+
+const OptionsPage: React.FC = () => {
+  const [content, setContent] = useState<ContentProps>({
     isLoading: true,
     options: {},
   });
 
-  /**
-   * @returns {Promise}
-   */
   async function resetOptions() {
     setContent({
       isLoading: false,
@@ -29,20 +32,17 @@ function OptionsApp() {
 
   useEffect(() => {
     function startListeners() {
-      Events.subscribe(Events.OPTIONS_CLEAR, resetOptions);
-      Events.subscribe(Events.OPTION_CHANGE, onOptionChange);
+      EventDispatcher.subscribe(Events.OPTIONS_CLEAR, resetOptions);
+      EventDispatcher.subscribe(Events.OPTIONS_CHANGE, onOptionChange);
     }
 
     function stopListeners() {
-      Events.unsubscribe(Events.OPTIONS_CLEAR, resetOptions);
-      Events.unsubscribe(Events.OPTION_CHANGE, onOptionChange);
+      EventDispatcher.unsubscribe(Events.OPTIONS_CLEAR, resetOptions);
+      EventDispatcher.unsubscribe(Events.OPTIONS_CHANGE, onOptionChange);
     }
 
-    /**
-     * @param {OptionEventData} data
-     */
-    function onOptionChange(data) {
-      const optionsToSave = {};
+    function onOptionChange(data: OptionEventData) {
+      const optionsToSave = {} as StorageValuesOptions;
       const options = {
         ...content.options,
         [data.id]: {
@@ -73,14 +73,14 @@ function OptionsApp() {
             isLoading: false,
             options,
           });
-          await Events.dispatch(Events.SNACKBAR_SHOW, {
+          await EventDispatcher.dispatch(Events.SNACKBAR_SHOW, {
             messageName: 'saveOptionSuccess',
             severity: 'success',
           });
         })
         .catch(async err => {
           Errors.error('Failed to save option.', err);
-          await Events.dispatch(Events.SNACKBAR_SHOW, {
+          await EventDispatcher.dispatch(Events.SNACKBAR_SHOW, {
             messageName: 'saveOptionFailed',
             severity: 'error',
           });
@@ -98,7 +98,7 @@ function OptionsApp() {
   return (
     <ErrorBoundary>
       <OptionsHeader/>
-      <Container classes={{ root: 'options-container' }}>
+      <Container className="options-container">
         {content.isLoading ? (
           <UtsCenter>
             <CircularProgress/>
@@ -114,6 +114,6 @@ function OptionsApp() {
       </Container>
     </ErrorBoundary>
   );
-}
+};
 
-export { OptionsApp };
+export { OptionsPage };

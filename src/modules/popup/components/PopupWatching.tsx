@@ -1,22 +1,26 @@
 import { Box, Typography } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import React from 'react';
+import * as React from 'react';
 import { PopupInfo } from './PopupInfo';
 import { PopupTmdbImage } from './PopupTmdbImage';
+import { ScrobbleItem } from '../../../models/ScrobbleItem';
 
-function PopupWatching({ item }) {
+interface IPopupWatching {
+  item: ScrobbleItem,
+}
+
+const PopupWatching: React.FC<IPopupWatching> = ({ item }) => {
   return (
     <Box>
       <PopupTmdbImage item={item}/>
-      <Box classes={{ root: 'popup-watching--overlay-color' }}/>
-      <Box classes={{ root: 'popup-watching--content' }}>
+      <Box className="popup-watching--overlay-color"/>
+      <Box className="popup-watching--content">
         <PopupInfo>
           <Typography variant="overline">{browser.i18n.getMessage('nowScrobbling')}</Typography>
-          {item.show ? (
+          {item.type === 'show' ? (
             <>
-              <Typography variant="h6">{item.title}</Typography>
+              <Typography variant="h6">{item.episodeTitle}</Typography>
               <Typography variant="subtitle2">{browser.i18n.getMessage('from')}</Typography>
-              <Typography variant="subtitle1">{item.show.title}</Typography>
+              <Typography variant="subtitle1">{item.title}</Typography>
             </>
           ) : (
             <Typography variant="h6">{item.title}</Typography>
@@ -25,10 +29,6 @@ function PopupWatching({ item }) {
       </Box>
     </Box>
   );
-}
-
-PopupWatching.propTypes = {
-  item: PropTypes.object.isRequired,
 };
 
 export { PopupWatching };

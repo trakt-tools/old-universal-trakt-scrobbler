@@ -1,31 +1,29 @@
 import { Button, CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UtsCenter } from '../../../components/UtsCenter';
-import { Events } from '../../../services/Events';
+import { Events, EventDispatcher } from '../../../services/Events';
 import { Session } from '../../../services/Session';
 
-function LoginPage() {
+const LoginPage: React.FC = () => {
   const history = useHistory();
   const [isLoading, setLoading] = useState(true);
 
-  /**
-   * @returns {Promise}
-   */
-  async function onLoginClick() {
+  async function onLoginClick(): Promise<void> {
     setLoading(true);
     await Session.login();
   }
 
   useEffect(() => {
     function startListeners() {
-      Events.subscribe(Events.LOGIN_SUCCESS, onLoginSuccess);
-      Events.subscribe(Events.LOGIN_ERROR, onLoginError);
+      EventDispatcher.subscribe(Events.LOGIN_SUCCESS, onLoginSuccess);
+      EventDispatcher.subscribe(Events.LOGIN_ERROR, onLoginError);
     }
 
     function stopListeners() {
-      Events.unsubscribe(Events.LOGIN_SUCCESS, onLoginSuccess);
-      Events.unsubscribe(Events.LOGIN_ERROR, onLoginError);
+      EventDispatcher.unsubscribe(Events.LOGIN_SUCCESS, onLoginSuccess);
+      EventDispatcher.unsubscribe(Events.LOGIN_ERROR, onLoginError);
     }
 
     function onLoginSuccess() {
@@ -60,6 +58,6 @@ function LoginPage() {
       )}
     </UtsCenter>
   );
-}
+};
 
 export { LoginPage };

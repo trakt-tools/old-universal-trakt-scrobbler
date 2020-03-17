@@ -1,4 +1,5 @@
 import { NetflixApi } from './NetflixApi';
+import { Item } from '../../../models/Item';
 
 class _NetflixParser {
   constructor() {
@@ -9,38 +10,24 @@ class _NetflixParser {
     this.getId = this.getId.bind(this);
   }
 
-  /**
-   * For testing purposes.
-   * @returns {string}
-   */
-  getLocation() {
+  getLocation(): string {
     return window.location.href;
   }
 
-  /**
-   * @returns {Promise<import('../../../models/Item').Item>}
-   */
-  parseItem() {
+  parseItem(): Promise<Item> {
     return new Promise(this.checkId);
   }
 
-  /**
-   * @return {number}
-   */
-  parseProgress() {
+  parseProgress(): number {
     let progress = 0.0;
-    const scrubber = document.querySelector('.scrubber-bar .current-progress');
+    const scrubber: HTMLElement = document.querySelector('.scrubber-bar .current-progress');
     if (scrubber) {
       progress = parseFloat(scrubber.style.width);
     }
     return progress;
   }
 
-  /**
-   * @param {Function} callback
-   * @returns {Promise}
-   */
-  async checkId(callback) {
+  async checkId(callback: Function): Promise<void> {
     const id = await this.getId();
     if (id) {
       const item = await NetflixApi.getItem(id);
@@ -50,10 +37,7 @@ class _NetflixParser {
     }
   }
 
-  /**
-   * @returns {Promise<string>}
-   */
-  async getId() {
+  async getId(): Promise<string> {
     // If we can access the global netflix object from the page, there is no need to parse the page in order to retrieve the ID of the item being watched.
     let id = null;
     const session = await NetflixApi.getSession();

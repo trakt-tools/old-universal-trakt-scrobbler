@@ -1,14 +1,10 @@
 import { Button, Typography } from '@material-ui/core';
-import React from 'react';
+import * as React from 'react';
 import { Messaging } from '../../../services/Messaging';
 import { PopupInfo } from '../components/PopupInfo';
 
-function AboutPage() {
-  /**
-   * @param {string} url
-   * @returns {Promise}
-   */
-  async function onLinkClick(url) {
+const AboutPage: React.FC = () => {
+  async function onLinkClick(url: string): Promise<void> {
     await Messaging.toBackground({ action: 'create-tab', url });
   }
 
@@ -24,6 +20,6 @@ function AboutPage() {
       </Button>
     </PopupInfo>
   );
-}
+};
 
 export { AboutPage };

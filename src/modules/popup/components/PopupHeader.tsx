@@ -1,40 +1,36 @@
 import { AppBar, Button, Toolbar } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import React from 'react';
+import * as React from 'react';
 import { UtsLeftRight } from '../../../components/UtsLeftRight';
 import { Messaging } from '../../../services/Messaging';
 import { Session } from '../../../services/Session';
+import { History } from 'history';
 
-function PopupHeader({ history, isLoggedIn }) {
-  /**
-   * @param {string} path
-   */
-  function onRouteClick(path) {
+interface IPopupHeader {
+  history: History,
+  isLoggedIn: boolean,
+}
+
+const PopupHeader: React.FC<IPopupHeader> = ({ history, isLoggedIn }) => {
+  function onRouteClick(path: string) {
     history.push(path);
   }
 
-  /**
-   * @param {string} url
-   * @returns {Promise}
-   */
-  async function onLinkClick(url) {
+  async function onLinkClick(url: string): Promise<void> {
     await Messaging.toBackground({ action: 'create-tab', url });
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async function onLogoutClick() {
+  async function onLogoutClick(): Promise<void> {
     await Session.logout();
   }
 
   return (
     <AppBar
-      classes={{ root: 'popup-header' }}
+      className="popup-header"
       position="sticky"
     >
       <Toolbar>
         <UtsLeftRight
+          centerVertically={true}
           left={(
             <>
               <Button
@@ -69,11 +65,6 @@ function PopupHeader({ history, isLoggedIn }) {
       </Toolbar>
     </AppBar>
   );
-}
-
-PopupHeader.propTypes = {
-  history: PropTypes.object.isRequired,
-  isLoggedIn: PropTypes.bool.isRequired,
 };
 
 export { PopupHeader };

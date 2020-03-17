@@ -50,7 +50,7 @@ class _TraktScrobble extends TraktApi {
       }
     }
     try {
-      const data: GenericObject = {};
+      const data: TraktScrobbleData = {} as TraktScrobbleData;
       if (item.type === 'show') {
         data.episode = {
           ids: {

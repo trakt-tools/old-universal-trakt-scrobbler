@@ -5,6 +5,16 @@ import { Messaging } from '../../../services/Messaging';
 import { Requests } from '../../../services/Requests';
 
 class _NetflixApi {
+  HOST_URL: string;
+  API_URL: string;
+  ACTIVATE_URL: string;
+  AUTH_REGEX: RegExp;
+  BUILD_IDENTIFIER_REGEX: RegExp;
+  isActivated: boolean;
+  authUrl: string;
+  buildIdentifier: string;
+  sessionListener: Function;
+
   constructor() {
     this.HOST_URL = 'https://www.netflix.com';
     this.API_URL = `${this.HOST_URL}/api/shakti`;
@@ -12,16 +22,9 @@ class _NetflixApi {
     this.AUTH_REGEX = /"authURL":"(.*?)"/;
     this.BUILD_IDENTIFIER_REGEX = /"BUILD_IDENTIFIER":"(.*?)"/;
 
-    /** @type {boolean} */
     this.isActivated = false;
-
-    /** @type {string} */
     this.authUrl = '';
-
-    /** @type {string} */
     this.buildIdentifier = '';
-
-    /** @type {Function} */
     this.sessionListener = null;
 
     this.extractAuthUrl = this.extractAuthUrl.bind(this);
@@ -33,26 +36,15 @@ class _NetflixApi {
     this.receiveSession = this.receiveSession.bind(this);
   }
 
-  /**
-   * @param {string} text
-   * @returns {string}
-   */
-  extractAuthUrl(text) {
+  extractAuthUrl(text: string): string {
     return text.match(this.AUTH_REGEX)[1];
   }
 
-  /**
-   * @param {string} text
-   * @param {string}
-   */
-  extractBuildIdentifier(text) {
+  extractBuildIdentifier(text: string): string {
     return text.match(this.BUILD_IDENTIFIER_REGEX)[1];
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async activate() {
+  async activate(): Promise<void> {
     // If we can access the global netflix object from the page, there is no need to send a request to Netflix in order to retrieve the API definitions.
     const apiDefs = await Messaging.toBackground({ action: 'get-netflix-api-defs' });
     if (apiDefs.authUrl && apiDefs.buildIdentifier) {
@@ -60,31 +52,27 @@ class _NetflixApi {
       this.buildIdentifier = apiDefs.buildIdentifier;
       this.isActivated = true;
     } else {
-      const text = await Requests.send({
+      const responseText = await Requests.send({
         url: this.ACTIVATE_URL,
         method: 'GET',
       });
-      this.authUrl = this.extractAuthUrl(text);
-      this.buildIdentifier = this.extractBuildIdentifier(text);
+      this.authUrl = this.extractAuthUrl(responseText);
+      this.buildIdentifier = this.extractBuildIdentifier(responseText);
       this.isActivated = true;
     }
   }
 
-  /**
-   * @param {string} id
-   * @returns {Promise<Item>}
-   */
-  async getItem(id) {
-    let item = null;
+  async getItem(id: string): Promise<Item> {
+    let item: Item = null;
     if (!this.isActivated) {
       await this.activate();
     }
     try {
-      const text = await Requests.send({
+      const responseText = await Requests.send({
         url: `${this.API_URL}/${this.buildIdentifier}/metadata?languages=en-US&movieid=${id}`,
         method: 'GET',
       });
-      item = this.parseMetadata(JSON.parse(text));
+      item = this.parseMetadata(JSON.parse(responseText));
     } catch (err) {
       Errors.error('Failed to get item.', err);
       item = null;
@@ -92,21 +80,19 @@ class _NetflixApi {
     return item;
   }
 
-  /**
-   * @param {Object} metadata
-   * @returns {Item}
-   */
-  parseMetadata(metadata) {
-    let item = null;
+  parseMetadata(metadata: NetflixSingleMetadataItem): Item {
+    let item: Item = null;
+    const id = metadata.video.id;
     const type = metadata.video.type;
     const title = metadata.video.title;
     const year = metadata.video.year;
     if (type === 'show') {
-      let episodeInfo = null;
-      const seasonInfo = metadata.video.seasons
+      const video = metadata as any as NetflixMetadataShow;
+      let episodeInfo: NetflixMetadataShowEpisode = null;
+      const seasonInfo = video.seasons
         .filter(season => season.episodes
           .filter(episode => {
-            const isMatch = episode.id === metadata.video.currentEpisode;
+            const isMatch = episode.id === video.currentEpisode;
             if (isMatch) {
               episodeInfo = episode;
             }
@@ -116,18 +102,15 @@ class _NetflixApi {
       const isCollection = seasonInfo.shortName.includes('C');
       const season = seasonInfo.seq;
       const episode = episodeInfo.seq;
-      const epTitle = episodeInfo.title;
-      item = new Item({ type, title, year, isCollection, season, episode, epTitle });
+      const episodeTitle = episodeInfo.title;
+      item = new Item({ id, type, title, year, isCollection, season, episode, episodeTitle });
     } else {
-      item = new Item({ type, title, year });
+      item = new Item({ id, type, title, year });
     }
     return item;
   }
 
-  /**
-   * @returns {Promise<Object>}
-   */
-  getSession() {
+  getSession(): Promise<NetflixSession> {
     return new Promise(resolve => {
       if (window.wrappedJSObject) {
         // Firefox wraps page objects, so we can access the global netflix object by unwrapping it.
@@ -151,11 +134,7 @@ class _NetflixApi {
     });
   }
 
-  /**
-   * @param {Function} resolve
-   * @param {Event} event
-   */
-  receiveSession(resolve, event) {
+  receiveSession(resolve: Function, event: Event) {
     window.removeEventListener('uts-receiveSession', this.sessionListener);
     const session = JSON.parse(event.detail.session);
     resolve(session);

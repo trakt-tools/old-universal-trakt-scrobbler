@@ -1,26 +1,30 @@
 import { CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import * as React from 'React';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UtsCenter } from '../../../components/UtsCenter';
 import { BrowserStorage } from '../../../services/BrowserStorage';
 import { Session } from '../../../services/Session';
 import { PopupNotWatching } from '../components/PopupNotWatching';
 import { PopupWatching } from '../components/PopupWatching';
+import { ScrobbleItem } from '../../../models/ScrobbleItem';
 
-const initialContentState = {
+interface IPopupHomeContent {
+  isLoading: boolean,
+  currentItem: ScrobbleItem,
+}
+
+const initialContentState: IPopupHomeContent = {
   isLoading: true,
   currentItem: null,
 };
 
-function HomePage() {
+const HomePage: React.FC = () => {
   const history = useHistory();
   const [content, setContent] = useState(initialContentState);
 
   useEffect(() => {
-    /**
-     * @returns {Promise}
-     */
-    async function getCurrentItem() {
+    async function getCurrentItem(): Promise<void> {
       if (Session.isLoggedIn) {
         const values = await BrowserStorage.get('currentItem');
         setContent({

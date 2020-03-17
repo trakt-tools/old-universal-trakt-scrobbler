@@ -1,25 +1,21 @@
-import { Events } from '../../../services/Events';
+import { Events, EventDispatcher } from '../../../services/Events';
 import { NetflixApi } from './NetflixApi';
 import { NetflixParser } from './NetflixParser';
 
 class _NetflixEvents {
+  changeListener: any;
+  isPaused: boolean;
+  isPlaying: boolean;
+  progress: number;
+  url: string;
+  videoId: number;
+
   constructor() {
-    /** @type {Object} */
     this.changeListener = null;
-
-    /** @type {boolean} */
     this.isPaused = false;
-
-    /** @type {boolean} */
     this.isPlaying = false;
-
-    /** @type {number} */
     this.progress = 0.0;
-
-    /** @type {string} */
     this.url = '';
-
-    /** @type {number} */
     this.videoId = 0;
 
     this.startListeners = this.startListeners.bind(this);
@@ -43,11 +39,7 @@ class _NetflixEvents {
     this.stopChangeListener();
   }
 
-  /**
-   * For testing purposes.
-   * @returns {string}
-   */
-  getLocation() {
+  getLocation(): string {
     return window.location.href;
   }
 
@@ -60,10 +52,7 @@ class _NetflixEvents {
     this.changeListener = null;
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async checkForChanges() {
+  async checkForChanges(): Promise<void> {
     // If we can access the global netflix object from the page, there is no need to parse the page in order to retrieve information about the item being watched.
     const session = await NetflixApi.getSession();
     if (typeof session !== 'undefined') {
@@ -116,7 +105,7 @@ class _NetflixEvents {
           }
         } else {
           if (this.isPaused) {
-            await this.play();
+            await this.start();
             this.isPaused = false;
           }
           await this.updateProgress(newProgress);
@@ -127,12 +116,7 @@ class _NetflixEvents {
     this.changeListener = window.setTimeout(this.checkForChanges, 500);
   }
 
-  /**
-   * @param {string} oldUrl
-   * @param {string} newUrl
-   * @returns {Promise}
-   */
-  async onUrlChange(oldUrl, newUrl) {
+  async onUrlChange(oldUrl: string, newUrl: string): Promise<void> {
     if (oldUrl.includes('watch') && newUrl.includes('watch')) {
       await this.stop();
       await this.start();
@@ -146,38 +130,25 @@ class _NetflixEvents {
     }
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async start() {
-    await Events.dispatch(Events.SCROBBLE_START, {});
-    await Events.dispatch(Events.SCROBBLE_ACTIVE, {});
+  async start(): Promise<void> {
+    await EventDispatcher.dispatch(Events.SCROBBLE_START, {});
+    await EventDispatcher.dispatch(Events.SCROBBLE_ACTIVE, {});
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async pause() {
-    await Events.dispatch(Events.SCROBBLE_PAUSE, {});
-    await Events.dispatch(Events.SCROBBLE_INACTIVE, {});
+  async pause(): Promise<void> {
+    await EventDispatcher.dispatch(Events.SCROBBLE_PAUSE, {});
+    await EventDispatcher.dispatch(Events.SCROBBLE_INACTIVE, {});
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async stop() {
-    await Events.dispatch(Events.SCROBBLE_STOP, {});
+  async stop(): Promise<void> {
+    await EventDispatcher.dispatch(Events.SCROBBLE_STOP, {});
     if (!this.isPaused) {
-      await Events.dispatch(Events.SCROBBLE_INACTIVE, {});
+      await EventDispatcher.dispatch(Events.SCROBBLE_INACTIVE, {});
     }
   }
 
-  /**
-   * @param {number} newProgress
-   * @returns {Promise}
-   */
-  async updateProgress(newProgress) {
-    await Events.dispatch(Events.SCROBBLE_PROGRESS, { progress: newProgress });
+  async updateProgress(newProgress: number): Promise<void> {
+    await EventDispatcher.dispatch(Events.SCROBBLE_PROGRESS, { progress: newProgress });
   }
 }
 

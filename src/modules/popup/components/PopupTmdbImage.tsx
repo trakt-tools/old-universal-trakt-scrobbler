@@ -1,11 +1,16 @@
 import { Box } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { secrets } from '../../../secrets';
 import { Errors } from '../../../services/Errors';
 import { Requests } from '../../../services/Requests';
+import { ScrobbleItem } from '../../../models/ScrobbleItem';
 
-function PopupTmdbImage({ item }) {
+interface IPopupTmdbImage {
+  item: ScrobbleItem,
+}
+
+const PopupTmdbImage: React.FC<IPopupTmdbImage> = ({ item }) => {
   const [imageConfig, setImageConfig] = useState({
     host: null,
     width: {
@@ -16,21 +21,18 @@ function PopupTmdbImage({ item }) {
   const [imageUrl, setImageUrl] = useState('https://trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png');
 
   useEffect(() => {
-    /**
-     * @returns {Promise}
-     */
-    async function getConfig() {
+    async function getConfig(): Promise<void> {
       try {
-        const text = await Requests.send({
+        const responseText = await Requests.send({
           url: `https://api.themoviedb.org/3/configuration?api_key=${secrets.tmdbApiKey}`,
           method: 'GET',
         });
-        const json = JSON.parse(text);
+        const responseJson = JSON.parse(responseText);
         setImageConfig({
-          host: json.images.secure_base_url,
+          host: responseJson.images.secure_base_url,
           width: {
-            movie: json.images.poster_sizes[2],
-            show: json.images.still_sizes[2],
+            movie: responseJson.images.poster_sizes[2],
+            show: responseJson.images.still_sizes[2],
           },
         });
       } catch (err) {
@@ -42,20 +44,17 @@ function PopupTmdbImage({ item }) {
   }, []);
 
   useEffect(() => {
-    /**
-     * @returns {Promise}
-     */
-    async function getImageUrl() {
-      if (item && item.ids && item.ids.tmdb && imageConfig.host) {
+    async function getImageUrl(): Promise<void> {
+      if (item && item.tmdbId && imageConfig.host) {
         try {
-          const text = await Requests.send({
+          const responseText = await Requests.send({
             url: getApiUrl(),
             method: 'GET',
           });
-          const json = JSON.parse(text);
-          if (!json.status_code || json.status_code !== 25) {
+          const responseJson = JSON.parse(responseText);
+          if (!responseJson.status_code || responseJson.status_code !== 25) {
             const imageKey = item.type === 'show' ? 'stills' : 'posters';
-            const image = json[imageKey][0];
+            const image = responseJson[imageKey][0];
             if (image) {
               setImageUrl(`${imageConfig.host}${imageConfig.width[item.type]}${image.file_path}`);
             }
@@ -66,18 +65,15 @@ function PopupTmdbImage({ item }) {
       }
     }
 
-    /**
-     * @returns {string}
-     */
-    function getApiUrl() {
+    function getApiUrl(): string {
       let type = '';
       let path = '';
       if (item.type === 'show') {
         type = 'tv';
-        path = `${item.show.ids.tmdb}/season/${item.season}/episode/${item.number}`;
+        path = `${item.tmdbId}/season/${item.season}/episode/${item.episode}`;
       } else {
         type = 'movie';
-        path = item.ids && item.ids.tmdb;
+        path = item.tmdbId.toString();
       }
       return `https://api.themoviedb.org/3/${type}/${path}/images?api_key=${secrets.tmdbApiKey}`;
     }
@@ -87,14 +83,10 @@ function PopupTmdbImage({ item }) {
 
   return (
     <Box
-      classes={{ root: 'popup-watching--overlay-image' }}
+      className="popup-watching--overlay-image"
       style={{ backgroundImage: `url(${imageUrl})` }}
     ></Box>
   );
-}
-
-PopupTmdbImage.propTypes = {
-  item: PropTypes.object.isRequired,
 };
 
 export { PopupTmdbImage };

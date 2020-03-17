@@ -29,20 +29,22 @@ class _TraktSearch extends TraktApi {
         if (item.type === 'show') {
           const episodeItem = searchItem as TraktSearchEpisodeItem; //TODO can probably avoid assertion with clever generics
           const id = episodeItem.episode.ids.trakt;
+          const tmdbId = episodeItem.episode.ids.tmdb;
           const title = episodeItem.show.title;
           const year = episodeItem.show.year;
           const season = episodeItem.episode.season;
           const episode = episodeItem.episode.number;
           const episodeTitle = episodeItem.episode.title;
           const progress = 0.0;
-          scrobbleItem = new ScrobbleItem({ id, type: item.type, title, year, season, episode, episodeTitle, progress });
+          scrobbleItem = new ScrobbleItem({ id, tmdbId, type: item.type, title, year, season, episode, episodeTitle, progress });
         } else {
           const movieItem = searchItem as TraktSearchMovieItem; //TODO can probably avoid assertion with clever generics
           const id = movieItem.movie.ids.trakt;
+          const tmdbId = movieItem.movie.ids.tmdb;
           const title = movieItem.movie.title;
           const year = movieItem.movie.year;
           const progress = 0.0;
-          scrobbleItem = new ScrobbleItem({ id, type: item.type, title, year, progress });
+          scrobbleItem = new ScrobbleItem({ id, tmdbId, type: item.type, title, year, progress });
         }
         await EventDispatcher.dispatch(Events.SEARCH_SUCCESS, { searchItem });
       } else {
