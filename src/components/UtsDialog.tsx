@@ -1,6 +1,14 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
-import { Events } from '../services/Events';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { EventDispatcher, Events } from '../services/Events';
+
+interface DialogData {
+  title: string,
+  message: string,
+  onConfirm: () => void,
+  onDeny: () => void,
+}
 
 function UtsDialog() {
   const [dialog, setDialog] = useState({
@@ -11,10 +19,7 @@ function UtsDialog() {
     onDeny: null,
   });
 
-  /**
-   * @param {boolean} didConfirm
-   */
-  function closeDialog(didConfirm) {
+  function closeDialog(didConfirm: boolean) {
     const callback = didConfirm ? dialog.onConfirm : dialog.onDeny;
     setDialog(prevDialog => ({
       ...prevDialog,
@@ -27,17 +32,14 @@ function UtsDialog() {
 
   useEffect(() => {
     function startListeners() {
-      Events.subscribe(Events.DIALOG_SHOW, showDialog);
+      EventDispatcher.subscribe(Events.DIALOG_SHOW, showDialog);
     }
 
     function stopListeners() {
-      Events.unsubscribe(Events.DIALOG_SHOW, showDialog);
+      EventDispatcher.unsubscribe(Events.DIALOG_SHOW, showDialog);
     }
 
-    /**
-     * @param {Object} data
-     */
-    function showDialog(data) {
+    function showDialog(data: DialogData) {
       setDialog({
         isOpen: true,
         title: data.title,
