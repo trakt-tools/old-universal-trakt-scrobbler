@@ -71,7 +71,7 @@ class _TraktSearch extends TraktApi {
       searchItem = searchItems[0] as TraktSearchShowItem; //TODO can probably avoid assigning with clever generics
     } else {
       // Get the exact match if there are multiple movies with the same name by checking the year.
-      searchItem = (searchItems as TraktSearchMovieItem[]).find(x => x.movie.title === item.title && x.movie.year === item.year);
+      searchItem = item.year ? (searchItems as TraktSearchMovieItem[]).find(x => x.movie.title === item.title && x.movie.year === item.year) : searchItems[0];
     }
     if (!searchItem) {
       throw {

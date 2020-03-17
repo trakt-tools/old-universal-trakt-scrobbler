@@ -36,6 +36,7 @@ class _HboGoApi {
   }
 
   getSession(): Promise<HboGoSession> {
+    return Promise.resolve(undefined);
     return new Promise(resolve => {
       if (window.wrappedJSObject) {
         // Firefox wraps page objects, so we can access the global sdk object by unwrapping it.
