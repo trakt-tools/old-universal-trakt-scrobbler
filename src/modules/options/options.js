@@ -9,9 +9,7 @@ init();
 
 async function init() {
   browser.isBackgroundPage = false;
-  if (BrowserStorage.isSyncAvailable) {
-    await BrowserStorage.sync();
-  }
+  await BrowserStorage.sync();
   const values = await BrowserStorage.get('options');
   if (values.options && values.options.allowRollbar) {
     Errors.startRollbar();

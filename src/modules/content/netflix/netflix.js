@@ -11,9 +11,7 @@ init();
 async function init() {
   browser.isBackgroundPage = false;
   getApiDefs();
-  if (BrowserStorage.isSyncAvailable) {
-    await BrowserStorage.sync();
-  }
+  await BrowserStorage.sync();
   const values = await BrowserStorage.get('options');
   if (values.options) {
     if (values.options.allowRollbar) {
