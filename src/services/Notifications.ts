@@ -1,6 +1,6 @@
 import { TraktScrobble } from '../api/TraktScrobble';
 import { BrowserStorage } from './BrowserStorage';
-import { Events } from './Events';
+import { Events, EventDispatcher } from './Events';
 import { Messaging } from './Messaging';
 
 class _Notifications {
@@ -14,32 +14,19 @@ class _Notifications {
   }
 
   startListeners() {
-    Events.subscribe(Events.SCROBBLE_SUCCESS, this.onScrobbleSuccess);
-    Events.subscribe(Events.SCROBBLE_ERROR, this.onScrobbleError);
+    EventDispatcher.subscribe(Events.SCROBBLE_SUCCESS, this.onScrobbleSuccess);
+    EventDispatcher.subscribe(Events.SCROBBLE_ERROR, this.onScrobbleError);
   }
 
-  /**
-   * @param {ScrobbleEventData} data
-   * @returns {Promise}
-   */
-  async onScrobbleSuccess(data) {
+  async onScrobbleSuccess(data: ScrobbleEventData): Promise<void> {
     await this.onScrobble(data, true);
   }
 
-  /**
-   * @param {ScrobbleEventData} data
-   * @returns {Promise}
-   */
-  async onScrobbleError(data) {
+  async onScrobbleError(data: ScrobbleEventData): Promise<void> {
     await this.onScrobble(data, false);
   }
 
-  /**
-   * @param {ScrobbleEventData} data
-   * @param {boolean} isSuccess
-   * @returns {Promise}
-   */
-  async onScrobble(data, isSuccess) {
+  async onScrobble(data: ScrobbleEventData, isSuccess: boolean): Promise<void> {
     if (data.item && data.item.title) {
       let title = '';
       let message = '';
@@ -67,11 +54,7 @@ class _Notifications {
     }
   }
 
-  /**
-   * @param {RequestException} err
-   * @returns {Promise<string>}
-   */
-  async getTitleFromException(err) {
+  async getTitleFromException(err: RequestException): Promise<string> {
     let title = '';
     if (err) {
       if (err.status === 404) {
@@ -92,12 +75,7 @@ class _Notifications {
     return title;
   }
 
-  /**
-   * @param {string} title
-   * @param {string} message
-   * @returns {Promise}
-   */
-  async show(title, message) {
+  async show(title: string, message: string): Promise<void> {
     await Messaging.toBackground({ action: 'show-notification', title, message });
   }
 }

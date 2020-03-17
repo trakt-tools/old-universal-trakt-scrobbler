@@ -1,90 +1,65 @@
 class _BrowserStorage {
+  isSyncAvailable: boolean;
+
   constructor() {
-    /** @type {boolean} */
     this.isSyncAvailable = !!browser.storage.sync;
 
+    this.getBrowserName = this.getBrowserName.bind(this);
     this.sync = this.sync.bind(this);
     this.set = this.set.bind(this);
     this.get = this.get.bind(this);
     this.remove = this.remove.bind(this);
     this.clear = this.clear.bind(this);
     this.getSize = this.getSize.bind(this);
+    this.getOptions = this.getOptions.bind(this);
   }
 
-  /**
-   * @returns {string}
-   */
-  getBrowserName() {
-    let browserName = '';
+  getBrowserName(): 'Firefox' | 'Chrome' | 'Unknown' {
     const url = browser.runtime.getURL('');
     if (url.startsWith('moz')) {
-      browserName = 'Firefox';
-    } else if (url.startsWith('chrome')) {
-      browserName = 'Chrome';
-    } else {
-      browserName = 'Unknown';
+      return 'Firefox';
     }
-    return browserName;
+    if (url.startsWith('chrome')) {
+      return 'Chrome';
+    }
+    return 'Unknown';
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async sync() {
-    const values = await browser.storage.sync.get(null);
-    for (const key of Object.keys(values)) {
-      await browser.storage.local.set({ [key]: values[key] });
+  async sync(): Promise<void> {
+    if (this.isSyncAvailable) {
+      const values = await browser.storage.sync.get(null);
+      for (const key of Object.keys(values)) {
+        await browser.storage.local.set({ [key]: values[key] });
+      }
     }
   }
 
-  /**
-   * @param {StorageValues} values
-   * @param {boolean} doSync
-   * @returns {Promise}
-   */
-  async set(values, doSync) {
+  async set(values: StorageValues, doSync: boolean): Promise<void> {
     if (doSync && this.isSyncAvailable) {
       await browser.storage.sync.set(values);
     }
     await browser.storage.local.set(values);
   }
 
-  /**
-   * @param {string|Array<string>|Object<string, any>|null} keys
-   * @returns {Promise<StorageValues>}
-   */
-  get(keys) {
+  get(keys: string | string[] | null): Promise<StorageValues> {
     return browser.storage.local.get(keys);
   }
 
-  /**
-   * @param {string|Array<string>} keys
-   * @param {boolean} doSync
-   * @returns {Promise}
-   */
-  async remove(keys, doSync) {
+  async remove(keys: string | string[], doSync = false): Promise<void> {
     if (doSync && this.isSyncAvailable) {
       await browser.storage.sync.remove(keys);
     }
     await browser.storage.local.remove(keys);
   }
 
-  /**
-   * @param {boolean} doSync
-   * @returns {Promise}
-   */
-  async clear(doSync) {
+  async clear(doSync: boolean): Promise<void> {
     if (doSync && this.isSyncAvailable) {
       await browser.storage.sync.clear();
     }
     await browser.storage.local.clear();
   }
 
-  /**
-   * @param {string|Array<string>|Object<string, any>|null} keys
-   * @returns {Promise<string>}
-   */
-  async getSize(keys) {
+  async getSize(keys: string | string[] | null): Promise<string> {
     let size = '';
     const values = await this.get(keys);
     let bytes = (JSON.stringify(values) || '').length;
@@ -102,16 +77,14 @@ class _BrowserStorage {
     return size;
   }
 
-  /**
-   * @returns {Promise<Object>}
-   */
-  async getOptions() {
-    const options = {
+  async getOptions(): Promise<Options> {
+    const options: Options = {
       showNotifications: {
         id: 'showNotifications',
         name: '',
         description: '',
         value: false,
+        origins: [],
         permissions: ['notifications'],
       },
       sendReceiveSuggestions: {
@@ -119,7 +92,8 @@ class _BrowserStorage {
         name: '',
         description: '',
         value: false,
-        origins: ['*://script.google.com/*`, `*://script.googleusercontent.com/*'],
+        origins: ['*://script.google.com/*', '*://script.googleusercontent.com/*'],
+        permissions: []
       },
       allowRollbar: {
         id: 'allowRollbar',
@@ -127,6 +101,7 @@ class _BrowserStorage {
         description: '',
         value: false,
         origins: ['*://api.rollbar.com/*'],
+        permissions: []
       },
     };
     if (this.getBrowserName() === 'Firefox') {
@@ -135,6 +110,7 @@ class _BrowserStorage {
         name: '',
         description: '',
         value: false,
+        origins: [],
         permissions: ['cookies'],
       };
     }
@@ -142,7 +118,7 @@ class _BrowserStorage {
     for (const option of Object.values(options)) {
       option.name = browser.i18n.getMessage(`${option.id}Name`);
       option.description = browser.i18n.getMessage(`${option.id}Description`);
-      option.value = (values.options && values.options[option.id]) || false;
+      option.value = (values.options && values.options[option.id]) || option.value;
     }
     return options;
   }

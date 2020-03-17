@@ -11,51 +11,41 @@ class _Requests {
     this.getHeaders = this.getHeaders.bind(this);
   }
 
-  /**
-   * @param {RequestDetails} request
-   * @returns {Promise<string>}
-   * @throws {RequestException}
-   */
-  async send(request) {
-    let text = '';
+  async send(request: RequestDetails): Promise<string> {
+    let responseText = '';
     if (browser.isBackgroundPage || request.url.includes(window.location.host)) {
-      text = await this.sendDirectly(request);
+      responseText = await this.sendDirectly(request);
     } else {
       const response = await Messaging.toBackground({ action: 'send-request', request });
-      text = response;
+      responseText = response as any as string;
       if (response.error) {
         throw response.error;
       }
     }
-    return text;
+    return responseText;
   }
 
-  /**
-   * @param {RequestDetails} request
-   * @returns {Promise<string>}
-   * @throws {RequestException}
-   */
-  async sendDirectly(request) {
-    let status = 0;
-    let text = '';
+  async sendDirectly(request: RequestDetails): Promise<string> {
+    let responseStatus = 0;
+    let responseText = '';
     try {
       const response = await this.fetch(request);
-      status = response.status;
-      text = await response.text();
-      if (status < 200 || status >= 400) {
-        throw text;
+      responseStatus = response.status;
+      responseText = await response.text();
+      if (responseStatus < 200 || responseStatus >= 400) {
+        throw responseText;
       }
     } catch (err) {
-      throw { request, status, text };
+      throw {
+        request,
+        status: responseStatus,
+        text: responseText,
+      };
     }
-    return text;
+    return responseText;
   }
 
-  /**
-   * @param {RequestDetails} request
-   * @returns {Promise<Response>}
-   */
-  async fetch(request) {
+  async fetch(request: RequestDetails): Promise<Response> {
     let fetch = window.fetch;
     let options = await this.getOptions(request);
     if (window.wrappedJSObject) {
@@ -67,11 +57,7 @@ class _Requests {
     return fetch(request.url, options);
   }
 
-  /**
-   * @param {RequestDetails} request
-   * @returns {Promise<Object<string, any>}
-   */
-  async getOptions(request) {
+  async getOptions(request: RequestDetails): Promise<GenericObject> {
     return {
       method: request.method,
       headers: await this.getHeaders(request),
@@ -79,12 +65,8 @@ class _Requests {
     };
   }
 
-  /**
-   * @param {RequestDetails} request
-   * @returns {Promise<Object<string, string>>}
-   */
-  async getHeaders(request) {
-    const headers = {
+  async getHeaders(request: RequestDetails): Promise<GenericObject> {
+    const headers: GenericObject = {
       'Content-Type': typeof request.body === 'string' ? 'application/x-www-form-urlencoded' : 'application/json',
     };
     if (request.url.includes('trakt.tv')) {

@@ -1,4 +1,4 @@
-import { Events } from './Events';
+import { Events, EventDispatcher } from './Events';
 import { Messaging } from './Messaging';
 
 class _BrowserAction {
@@ -9,21 +9,15 @@ class _BrowserAction {
   }
 
   startListeners() {
-    Events.subscribe(Events.SCROBBLE_ACTIVE, this.setActiveIcon);
-    Events.subscribe(Events.SCROBBLE_INACTIVE, this.setInactiveIcon);
+    EventDispatcher.subscribe(Events.SCROBBLE_ACTIVE, this.setActiveIcon);
+    EventDispatcher.subscribe(Events.SCROBBLE_INACTIVE, this.setInactiveIcon);
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async setActiveIcon() {
+  async setActiveIcon(): Promise<void> {
     await Messaging.toBackground({ action: 'set-active-icon' });
   }
 
-  /**
-   * @returns {Promise}
-   */
-  async setInactiveIcon() {
+  async setInactiveIcon(): Promise<void> {
     await Messaging.toBackground({ action: 'set-inactive-icon' });
   }
 }
