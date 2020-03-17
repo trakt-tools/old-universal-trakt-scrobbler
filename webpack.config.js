@@ -123,6 +123,9 @@ function getWebpackConfig(env) {
         env.test ? [] : [new plugins.runAfterBuild(() => runFinalSteps(configJson))]
       ),
     ],
+    resolve: {
+      extensions: ['.js', '.ts', '.tsx', '.json']
+    },
     watch: !!(env.development && env.watch),
     watchOptions: {
       aggregateTimeout: 1000,
