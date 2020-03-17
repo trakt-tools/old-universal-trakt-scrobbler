@@ -2,6 +2,7 @@ import { Events, EventDispatcher } from '../services/Events';
 import { Requests } from '../services/Requests';
 import { TraktApi } from './TraktApi';
 import { ScrobbleItem } from '../models/ScrobbleItem';
+import { Messaging } from '../services/Messaging';
 
 class _TraktScrobble extends TraktApi {
   START: number;
@@ -23,6 +24,7 @@ class _TraktScrobble extends TraktApi {
 
   async start(item: ScrobbleItem): Promise<void> {
     await this.send(item, this.START);
+    await Messaging.toBackground({ action: 'start-scrobble' });
   }
 
   async pause(item: ScrobbleItem): Promise<void> {
@@ -31,6 +33,7 @@ class _TraktScrobble extends TraktApi {
 
   async stop(item: ScrobbleItem): Promise<void> {
     await this.send(item, this.STOP);
+    await Messaging.toBackground({ action: 'stop-scrobble' });
   }
 
   async send(item: ScrobbleItem, scrobbleType: number): Promise<void> {
