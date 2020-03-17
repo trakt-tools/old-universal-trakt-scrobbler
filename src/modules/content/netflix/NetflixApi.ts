@@ -87,7 +87,7 @@ class _NetflixApi {
     const title = metadata.video.title;
     const year = metadata.video.year;
     if (type === 'show') {
-      const video = metadata as any as NetflixMetadataShow;
+      const video = metadata.video as any as NetflixMetadataShow;
       let episodeInfo: NetflixMetadataShowEpisode = null;
       const seasonInfo = video.seasons
         .filter(season => season.episodes
