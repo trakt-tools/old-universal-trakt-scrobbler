@@ -49,7 +49,7 @@ It extracts information about the TV show or movie that you are watching by scra
 
 ### Known Issues
 
-- When you stop watching something on Netflix, try not to immediately close the tab / window. Using the "Back to Browse" button or pausing first is preferable, because then the extension is able to detect that you have stopped watching. If you simply close the tab / window, the extension will keep scrobbling the item.
+-
 
 ### Other Problems
 
