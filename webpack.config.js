@@ -51,12 +51,14 @@ function getWebpackConfig(env) {
     entry: {
       './chrome/js/background': ['./src/modules/background/background.js'],
       './chrome/js/trakt': ['./src/modules/content/trakt/trakt.js'],
+      './chrome/js/amazon-prime': ['./src/modules/content/amazon-prime/amazon-prime.js'],
       './chrome/js/hbo-go': ['./src/modules/content/hbo-go/hbo-go.js'],
       './chrome/js/netflix': ['./src/modules/content/netflix/netflix.js'],
       './chrome/js/options': ['./src/modules/options/options.js'],
       './chrome/js/popup': ['./src/modules/popup/popup.js'],
       './firefox/js/background': ['./src/modules/background/background.js'],
       './firefox/js/trakt': ['./src/modules/content/trakt/trakt.js'],
+      './firefox/js/amazon-prime': ['./src/modules/content/amazon-prime/amazon-prime.js'],
       './firefox/js/hbo-go': ['./src/modules/content/hbo-go/hbo-go.js'],
       './firefox/js/netflix': ['./src/modules/content/netflix/netflix.js'],
       './firefox/js/options': ['./src/modules/options/options.js'],
@@ -173,6 +175,16 @@ function getManifest(configJson, browserName) {
       {
         js: [
           'js/lib/browser-polyfill.js',
+          'js/amazon-prime.js',
+        ],
+        matches: [
+          '*://*.primevideo.com/*',
+        ],
+        run_at: 'document_idle',
+      },
+      {
+        js: [
+          'js/lib/browser-polyfill.js',
           'js/netflix.js',
         ],
         matches: [
@@ -213,6 +225,7 @@ function getManifest(configJson, browserName) {
       'tabs',
       'unlimitedStorage',
       '*://*.trakt.tv/*',
+      '*://*.primevideo.com/*',
       '*://*.hbogola.com/*',
       '*://*.hbogo.com.br/*',
       '*://*.netflix.com/*',
