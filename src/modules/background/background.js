@@ -27,19 +27,20 @@ async function onTabRemoved(tabId) {
     if (values.currentItem) {
       await TraktScrobble.stop(values.currentItem);
       await BrowserStorage.remove('currentItem');
-      setInactiveIcon();
     }
+    await setInactiveIcon();
+    scrobblingTabId = null;
   }
 }
 
 function setActiveIcon() {
-  browser.browserAction.setIcon({
+  return browser.browserAction.setIcon({
     path: browser.runtime.getURL('images/uts-icon-selected-38.png'),
   });
 }
 
 function setInactiveIcon() {
-  browser.browserAction.setIcon({
+  return browser.browserAction.setIcon({
     path: browser.runtime.getURL('images/uts-icon-38.png'),
   });
 }
