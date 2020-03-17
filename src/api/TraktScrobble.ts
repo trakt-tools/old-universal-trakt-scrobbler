@@ -1,8 +1,13 @@
-import { Events } from '../services/Events';
+import { Events, EventDispatcher } from '../services/Events';
 import { Requests } from '../services/Requests';
 import { TraktApi } from './TraktApi';
+import { ScrobbleItem } from '../models/ScrobbleItem';
 
 class _TraktScrobble extends TraktApi {
+  START: number;
+  PAUSE: number;
+  STOP: number;
+
   constructor() {
     super();
 
@@ -16,36 +21,19 @@ class _TraktScrobble extends TraktApi {
     this.send = this.send.bind(this);
   }
 
-  /**
-   * @param {import('../models/ScrobbleItem').ScrobbleItem} item
-   * @returns {Promise}
-   */
-  async start(item) {
+  async start(item: ScrobbleItem): Promise<void> {
     await this.send(item, this.START);
   }
 
-  /**
-   * @param {import('../models/ScrobbleItem').ScrobbleItem} item
-   * @returns {Promise}
-   */
-  async pause(item) {
+  async pause(item: ScrobbleItem): Promise<void> {
     await this.send(item, this.PAUSE);
   }
 
-  /**
-   * @param {import('../models/ScrobbleItem').ScrobbleItem} item
-   * @returns {Promise}
-   */
-  async stop(item) {
+  async stop(item: ScrobbleItem): Promise<void> {
     await this.send(item, this.STOP);
   }
 
-  /**
-   * @param {import('../models/ScrobbleItem').ScrobbleItem} item
-   * @param {number} scrobbleType
-   * @returns {Promise}
-   */
-  async send(item, scrobbleType) {
+  async send(item: ScrobbleItem, scrobbleType: number): Promise<void> {
     let path = '';
     switch (scrobbleType) {
       case this.START: {
@@ -62,14 +50,29 @@ class _TraktScrobble extends TraktApi {
       }
     }
     try {
+      const data: GenericObject = {};
+      if (item.type === 'show') {
+        data.episode = {
+          ids: {
+            trakt: item.id,
+          },
+        };
+      } else {
+        data.movie = {
+          ids: {
+            trakt: item.id,
+          },
+        };
+      }
+      data.progress = item.progress;
       await Requests.send({
         url: `${this.SCROBBLE_URL}${path}`,
         method: 'POST',
-        body: item.data,
+        body: data,
       });
-      await Events.dispatch(Events.SCROBBLE_SUCCESS, { item, scrobbleType });
+      await EventDispatcher.dispatch(Events.SCROBBLE_SUCCESS, { item, scrobbleType });
     } catch (err) {
-      await Events.dispatch(Events.SCROBBLE_FAILED, { item, scrobbleType, error: err });
+      await EventDispatcher.dispatch(Events.SCROBBLE_ERROR, { item, scrobbleType, error: err });
     }
   }
 }
