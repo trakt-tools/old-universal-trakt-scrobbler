@@ -23,10 +23,10 @@ class _TraktScrobble extends TraktApi {
   }
 
   async start(item: ScrobbleItem): Promise<void> {
-    await this.send(item, this.START);
     if (!browser.isBackgroundPage) {
       await Messaging.toBackground({ action: 'start-scrobble' });
     }
+    await this.send(item, this.START);
   }
 
   async pause(item: ScrobbleItem): Promise<void> {

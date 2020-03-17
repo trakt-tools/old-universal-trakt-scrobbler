@@ -14,7 +14,7 @@ const correctTitles: GenericObject = {
 
 //TODO this should be refactored or split into show and movie. Inheritance could be used to get the similarities.
 class Item implements IItem {
-  id: number;
+  id: number | string;
   type: 'show' | 'movie';
   title: string;
   year: number;

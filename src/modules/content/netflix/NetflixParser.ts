@@ -1,7 +1,7 @@
 import { NetflixApi } from './NetflixApi';
 import { Item } from '../../../models/Item';
 
-class _NetflixParser {
+class _NetflixParser implements IScrobbleParser {
   constructor() {
     this.getLocation = this.getLocation.bind(this);
     this.parseItem = this.parseItem.bind(this);

@@ -117,7 +117,7 @@ function onMessage(request, sender) {
     }
     case 'start-scrobble': {
       executingAction = new Promise(async resolve => {
-        if (scrobblingTabId) {
+        if (sender.tab.id !== scrobblingTabId) {
           // Stop the previous scrobble if it exists.
           const values = await BrowserStorage.get('currentItem');
           if (values.currentItem) {

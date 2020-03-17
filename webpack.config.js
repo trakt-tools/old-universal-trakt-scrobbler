@@ -51,11 +51,13 @@ function getWebpackConfig(env) {
     entry: {
       './chrome/js/background': ['./src/modules/background/background.js'],
       './chrome/js/trakt': ['./src/modules/content/trakt/trakt.js'],
+      './chrome/js/hbo-go': ['./src/modules/content/hbo-go/hbo-go.js'],
       './chrome/js/netflix': ['./src/modules/content/netflix/netflix.js'],
       './chrome/js/options': ['./src/modules/options/options.js'],
       './chrome/js/popup': ['./src/modules/popup/popup.js'],
       './firefox/js/background': ['./src/modules/background/background.js'],
       './firefox/js/trakt': ['./src/modules/content/trakt/trakt.js'],
+      './firefox/js/hbo-go': ['./src/modules/content/hbo-go/hbo-go.js'],
       './firefox/js/netflix': ['./src/modules/content/netflix/netflix.js'],
       './firefox/js/options': ['./src/modules/options/options.js'],
       './firefox/js/popup': ['./src/modules/popup/popup.js'],
@@ -178,6 +180,17 @@ function getManifest(configJson, browserName) {
         ],
         run_at: 'document_idle',
       },
+      {
+        js: [
+          'js/lib/browser-polyfill.js',
+          'js/hbo-go.js',
+        ],
+        matches: [
+          '*://*.hbogola.com/*',
+          '*://*.hbogo.com.br/*',
+        ],
+        run_at: 'document_idle',
+      },
     ],
     default_locale: 'en',
     optional_permissions: [
@@ -200,6 +213,8 @@ function getManifest(configJson, browserName) {
       'tabs',
       'unlimitedStorage',
       '*://*.trakt.tv/*',
+      '*://*.hbogola.com/*',
+      '*://*.hbogo.com.br/*',
       '*://*.netflix.com/*',
     ],
     web_accessible_resources: [
