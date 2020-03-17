@@ -98,12 +98,13 @@ function getWebpackConfig(env) {
           loaders: [loaders.style, loaders.css],
         },
         {
-          test: /\.jsx?$/,
+          test: /\.(t|j)sx?$/,
           exclude: /(node_modules|bower_components)/,
           loader: 'babel-loader',
           options: {
             envName: env.test ? 'test' : mode,
             presets: [
+              '@babel/typescript',
               '@babel/preset-env',
               '@babel/preset-react',
             ],
