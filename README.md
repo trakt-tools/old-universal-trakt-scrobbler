@@ -42,6 +42,7 @@ If you want to scrobble from Netflix, this is the only Trakt.tv [plugin](https:/
 ### Which streaming services are supported?
 
 - Netflix
+- HBO GO (Only tested for Latin America)
 
 ### How does the extension work?
 
