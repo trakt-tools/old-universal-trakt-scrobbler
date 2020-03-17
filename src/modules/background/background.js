@@ -2,8 +2,10 @@ import { TraktAuth } from '../../api/TraktAuth';
 import { BrowserStorage } from '../../services/BrowserStorage';
 import { Errors } from '../../services/Errors';
 import { Requests } from '../../services/Requests';
+import { TraktScrobble } from '../../api/TraktScrobble';
 
 let apiDefs = {};
+let scrobblingTabId = null;
 
 init();
 
@@ -14,7 +16,33 @@ async function init() {
   if (values.options && values.options.allowRollbar) {
     Errors.startRollbar();
   }
+  browser.tabs.onRemoved.addListener(onTabRemoved);
   browser.runtime.onMessage.addListener(onMessage);
+}
+
+async function onTabRemoved(tabId) {
+  // Check if the tab that was closed was the tab that was scrobbling, in which case, stop the scrobble.
+  if (tabId === scrobblingTabId) {
+    const values = await BrowserStorage.get('currentItem');
+    if (values.currentItem) {
+      await TraktScrobble.stop(values.currentItem);
+      await BrowserStorage.remove('currentItem');
+    }
+    await setInactiveIcon();
+    scrobblingTabId = null;
+  }
+}
+
+function setActiveIcon() {
+  return browser.browserAction.setIcon({
+    path: browser.runtime.getURL('images/uts-icon-selected-38.png'),
+  });
+}
+
+function setInactiveIcon() {
+  return browser.browserAction.setIcon({
+    path: browser.runtime.getURL('images/uts-icon-38.png'),
+  });
 }
 
 /**
@@ -58,15 +86,11 @@ function onMessage(request, sender) {
       break;
     }
     case 'set-active-icon': {
-      executingAction = browser.browserAction.setIcon({
-        path: browser.runtime.getURL('images/uts-icon-selected-38.png'),
-      });
+      executingAction = setActiveIcon();
       break;
     }
     case 'set-inactive-icon': {
-      executingAction = browser.browserAction.setIcon({
-        path: browser.runtime.getURL('images/uts-icon-38.png'),
-      });
+      executingAction = setInactiveIcon();
       break;
     }
     case 'set-netflix-api-defs': {
@@ -89,6 +113,26 @@ function onMessage(request, sender) {
             });
           }
         });
+      break;
+    }
+    case 'start-scrobble': {
+      executingAction = new Promise(async resolve => {
+        if (scrobblingTabId) {
+          // Stop the previous scrobble if it exists.
+          const values = await BrowserStorage.get('currentItem');
+          if (values.currentItem) {
+            await TraktScrobble.stop(values.currentItem);
+            await BrowserStorage.remove('currentItem');
+          }
+        }
+        scrobblingTabId = sender.tab.id;
+        resolve();
+      });
+      break;
+    }
+    case 'stop-scrobble': {
+      scrobblingTabId = null;
+      executingAction = Promise.resolve();
       break;
     }
   }
