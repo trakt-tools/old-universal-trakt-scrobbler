@@ -275,3 +275,34 @@ declare interface HboGoMetadataMovieItem {
   Name: string
   ProductionYear: number
 }
+
+declare interface AmazonPrimeSession {
+  playing: boolean,
+  paused: boolean,
+  progress: number,
+}
+
+declare interface AmazonPrimeMetadataItem {
+  catalogMetadata: {
+    catalog: {
+      entityType: 'TV Show' | 'Movie',
+      episodeNumber?: number,
+      id: string,
+      title: string,
+    },
+    family?: {
+      tvAncestors: [
+        {
+          catalog: {
+            seasonNumber: number,
+          }
+        },
+        {
+          catalog: {
+            title: string,
+          }
+        }
+      ]
+    }
+  }
+}
