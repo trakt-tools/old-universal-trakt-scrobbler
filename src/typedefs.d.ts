@@ -8,7 +8,7 @@ declare type TraktManualAuth = {
 };
 
 declare interface IItem {
-  id: number,
+  id: number | string,
   type: 'show' | 'movie',
   title: string,
   year: number,
@@ -44,7 +44,7 @@ declare type StorageValues = {
   },
 };
 
-interface TraktScrobbleData {
+declare interface TraktScrobbleData {
   movie?: {
     ids: {
       trakt: number,
@@ -116,7 +116,7 @@ declare interface OptionEventData {
   checked: boolean;
 }
 
-type TraktSearchEpisodeItem = TraktEpisodeItem & TraktSearchShowItem;
+declare type TraktSearchEpisodeItem = TraktEpisodeItem & TraktSearchShowItem;
 
 declare interface TraktEpisodeItem {
   episode: {
@@ -197,51 +197,81 @@ declare interface NetflixMetadataMovieItem {
   }
 }
 
-interface ScrobbleEventData {
+declare interface ScrobbleEventData {
   item: IScrobbleItem,
   scrobbleType: number,
   error: RequestException,
 }
 
-interface ScrobbleProgressEventData {
+declare interface ScrobbleProgressEventData {
   progress: number,
 }
 
-interface NetflixSingleMetadataItem {
+declare interface NetflixSingleMetadataItem {
   video: NetflixMetadataShow | NetflixMetadataMovie,
 }
 
-interface NetflixMetadataGeneric {
+declare interface NetflixMetadataGeneric {
   id: number,
   title: string,
   type: 'show' | 'movie',
   year: number,
 }
 
-type NetflixMetadataShow = NetflixMetadataGeneric & {
+declare type NetflixMetadataShow = NetflixMetadataGeneric & {
   currentEpisode: number,
   seasons: NetflixMetadataShowSeason[],
 };
 
-interface NetflixMetadataShowSeason {
+declare interface NetflixMetadataShowSeason {
   episodes: NetflixMetadataShowEpisode[],
   seq: number,
   shortName: string,
 }
 
-interface NetflixMetadataShowEpisode {
+declare interface NetflixMetadataShowEpisode {
   id: number,
   seq: number,
   title: string,
 }
 
-type NetflixMetadataMovie = NetflixMetadataGeneric & {
+declare type NetflixMetadataMovie = NetflixMetadataGeneric & {
 };
 
-interface NetflixSession {
+declare interface NetflixSession {
   currentTime: number,
   duration: number,
   paused: boolean,
   playing: boolean,
   videoId: number,
+}
+
+declare interface IScrobbleParser {
+  parseItem(): Promise<IItem>,
+}
+
+declare interface HboGoSession {
+  content: HboGoMetadataItem,
+  playing: boolean,
+  paused: boolean,
+  progress: number,
+}
+
+declare type HboGoMetadataItem = HboGoMetadataShowItem | HboGoMetadataMovieItem;
+
+declare interface HboGoMetadataShowItem {
+  Category: 'Series'
+  Id: string
+  Index: number
+  Name: string
+  ProductionYear: number
+  SeasonIndex: number
+  SeriesName: string
+}
+
+declare interface HboGoMetadataMovieItem {
+  Category: 'Movies'
+  Id: string
+  Name: string
+  ProductionYear: number
 }
