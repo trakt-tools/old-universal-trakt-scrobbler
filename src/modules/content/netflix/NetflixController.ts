@@ -8,9 +8,13 @@ import { Item } from '../../../models/Item';
 
 class _NetflixController {
   item: Item;
+  reachedScrobbleThreshold: boolean;
+  scrobbleThreshold: number;
 
   constructor() {
     this.item = null;
+    this.reachedScrobbleThreshold = false;
+    this.scrobbleThreshold = 80.0;
 
     this.startListeners = this.startListeners.bind(this);
     this.onStart = this.onStart.bind(this);
@@ -29,6 +33,7 @@ class _NetflixController {
 
   async onStart(): Promise<void> {
     try {
+      this.reachedScrobbleThreshold = false;
       if (!this.item) {
         this.item = await NetflixParser.parseItem();
       }
@@ -59,11 +64,17 @@ class _NetflixController {
       this.item.trakt = null;
     }
     this.item = null;
+    this.reachedScrobbleThreshold = false;
   }
 
-  onProgress(data: ScrobbleProgressEventData) {
+  async onProgress(data: ScrobbleProgressEventData): Promise<void> {
     if (this.item && this.item.trakt && !('notFound' in this.item.trakt)) {
       this.item.trakt.progress = data.progress;
+      if (!this.reachedScrobbleThreshold && this.item.trakt.progress > this.scrobbleThreshold) {
+        // Update the stored progress after reaching the scrobble threshold to make sure that the item is scrobbled on tab close.
+        await BrowserStorage.set({ currentItem: this.item.trakt }, false);
+        this.reachedScrobbleThreshold = true;
+      }
     }
   }
 
