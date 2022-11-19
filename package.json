@@ -63,6 +63,6 @@
     "typescript": "^3.6.3",
     "web-ext-types": "^3.2.1",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.12"
   }
 }
